@@ -19,6 +19,7 @@ contract Lock {
     }
 
     function withdraw() public {
+        // kontrola
         // console.log("Unlock time is %o and block timestamp is %o", unlockTime, block.timestamp);
 
         require(block.timestamp >= unlockTime, "You can't withdraw yet");

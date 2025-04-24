@@ -10,18 +10,14 @@ contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    // Mapiranje token ID-a na royalty postotak
     mapping(uint256 => uint256) private _tokenRoyalties;
-
-    // Mapiranje token ID-a na originalnog autora
     mapping(uint256 => address) private _originalCreators;
 
-    // Event prilikom kreiranja novog NFT-a
     event MusicNFTCreated(
         uint256 indexed tokenId,
         address indexed creator,
-        string tokenURI /* lokacija metapodataka tokena */,
-        uint256 royaltyPercentage /* # tantijemi */
+        string tokenURI,
+        uint256 royaltyPercentage
     );
 
     constructor() ERC721("MusicNFT", "MNFT") Ownable(msg.sender) {}
@@ -39,7 +35,6 @@ contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         _safeMint(recipient, newTokenId);
         _setTokenURI(newTokenId, tokenURI);
 
-        // Postavljanje tantijema i kreatora
         _tokenRoyalties[newTokenId] = royaltyPercentage;
         _originalCreators[newTokenId] = recipient;
 
@@ -60,10 +55,6 @@ contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         return (_originalCreators[tokenId], _tokenRoyalties[tokenId]);
     }
 
-    /**
-     * @dev Dohvaća adresu originalnog kreatora tokena
-     * @param tokenId ID tokena
-     */
     function getOriginalCreator(
         uint256 tokenId
     ) external view returns (address) {
@@ -71,7 +62,6 @@ contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         return _originalCreators[tokenId];
     }
 
-    // Poziva se prije svakog transfera tokena (nadjačava)
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -81,7 +71,6 @@ contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
-    // Override funkcije; određuje standard ugovora
     function supportsInterface(
         bytes4 interfaceId
     )
@@ -93,14 +82,12 @@ contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         return super.supportsInterface(interfaceId);
     }
 
-    // Dohvaća metapodatke
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
-    // Uništavanje tokena
     function _burn(
         uint256 tokenId
     ) internal override(ERC721, ERC721URIStorage) {

@@ -15,16 +15,10 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         bool isActive;
     }
 
-    // Fee za tržište
     uint256 private marketplaceFee = 250;
-
-    // Povezivanje ID tokena s podacima
     mapping(uint256 => ListedItem) private _listedItems;
-
-    // Lista svih token ID-ova na prodaji
     uint256[] private _allListedTokenIds;
 
-    // Eventi
     event ItemListed(
         uint256 indexed tokenId,
         address indexed seller,
@@ -43,12 +37,10 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         musicNFTContract = MusicNFT(musicNFTAddress);
     }
 
-    // Samo vlasnik poziva funkciju
     function setMusicNFTContract(address newAddress) external onlyOwner {
         musicNFTContract = MusicNFT(newAddress);
     }
 
-    // Omogućava vlasniku promjenu vrijednosti tantijema
     function setMarketplaceFee(uint256 newFee) external onlyOwner {
         require(newFee <= 1000, "Fee cannot exceed 10%");
         marketplaceFee = newFee;
@@ -59,7 +51,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         return marketplaceFee;
     }
 
-    // Stavljanje NFT na prodaju
     function listItem(uint256 tokenId, uint256 price) external nonReentrant {
         require(price > 0, "Price must be greater than 0");
         require(
@@ -81,11 +72,9 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         });
 
         _allListedTokenIds.push(tokenId);
-
         emit ItemListed(tokenId, msg.sender, price);
     }
 
-    // Kupovina
     function buyItem(uint256 tokenId) external payable nonReentrant {
         ListedItem storage item = _listedItems[tokenId];
 
@@ -93,18 +82,15 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         require(msg.value >= item.price, "Insufficient funds sent");
         require(msg.sender != item.seller, "Seller cannot buy their own item");
 
-        // Izračun naknada
         (address creator, uint256 royaltyPercentage) = musicNFTContract
             .getRoyaltyInfo(tokenId);
         uint256 royaltyAmount = (item.price * royaltyPercentage) / 10000;
         uint256 marketplaceAmount = (item.price * marketplaceFee) / 10000;
         uint256 sellerAmount = item.price - royaltyAmount - marketplaceAmount;
 
-        // Transferi
         item.isActive = false;
         item.owner = msg.sender;
 
-        // Plaćanje tantijema originalnom kreatoru
         if (royaltyAmount > 0) {
             (bool royaltySuccess, ) = payable(creator).call{
                 value: royaltyAmount
@@ -112,7 +98,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
             require(royaltySuccess, "Failed to send royalty");
         }
 
-        // Plaćanje tržišne naknade vlasniku tržišta
         if (marketplaceAmount > 0) {
             (bool feeSuccess, ) = payable(owner()).call{
                 value: marketplaceAmount
@@ -120,18 +105,14 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
             require(feeSuccess, "Failed to send marketplace fee");
         }
 
-        // Plaćanje prodavatelju
         (bool sellerSuccess, ) = payable(item.seller).call{value: sellerAmount}(
             ""
         );
         require(sellerSuccess, "Failed to send payment to seller");
 
-        // Transfer NFT-a kupcu
         musicNFTContract.safeTransferFrom(item.seller, msg.sender, tokenId);
-
         emit ItemSold(tokenId, item.seller, msg.sender, item.price);
 
-        // Povrat vipka
         if (msg.value > item.price) {
             (bool refundSuccess, ) = payable(msg.sender).call{
                 value: msg.value - item.price
@@ -140,7 +121,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         }
     }
 
-    // Poništava listanje
     function cancelListing(uint256 tokenId) external {
         ListedItem storage item = _listedItems[tokenId];
 
@@ -148,7 +128,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         require(item.seller == msg.sender, "Only seller can cancel listing");
 
         item.isActive = false;
-
         emit ItemCanceled(tokenId, msg.sender);
     }
 
