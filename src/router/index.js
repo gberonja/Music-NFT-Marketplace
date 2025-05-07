@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-
+// Uvoz komponenti za stranice
 import Home from '../views/Home.vue'
 import Marketplace from '../views/Marketplace.vue'
 import UploadMusic from '../views/UploadMusic.vue'

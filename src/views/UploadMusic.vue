@@ -21,7 +21,7 @@ const {
 
 const { isConnected } = storeToRefs(web3Store)
 
-// Handler za odabir audio datoteke
+
 function handleAudioFileChange(e) {
     const file = e.target.files[0]
     if (file && file.type.startsWith('audio/')) {
@@ -31,7 +31,7 @@ function handleAudioFileChange(e) {
     }
 }
 
-// Handler za odabir slike
+
 function handleCoverImageChange(e) {
     const file = e.target.files[0]
     if (file && file.type.startsWith('image/')) {
@@ -41,10 +41,10 @@ function handleCoverImageChange(e) {
     }
 }
 
-// Resetiranje forme
+
 function resetForm() {
     uploadStore.resetForm()
-    // Resetiranje input polja
+
     const fileInputs = document.querySelectorAll('input[type="file"]')
     fileInputs.forEach(input => {
         input.value = ''
