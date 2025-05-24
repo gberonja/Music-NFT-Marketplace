@@ -2,11 +2,10 @@
 pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
+contract MusicNFT is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -20,11 +19,11 @@ contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         uint256 royaltyPercentage
     );
 
-    constructor() ERC721("MusicNFT", "MNFT") Ownable(msg.sender) {}
+    constructor() ERC721("MusicNFT", "MNFT") {}
 
     function mintMusic(
         address recipient,
-        string memory tokenURI,
+        string memory _tokenURI,
         uint256 royaltyPercentage
     ) public returns (uint256) {
         require(royaltyPercentage <= 1000, "Royalty cannot exceed 10%");
@@ -33,7 +32,7 @@ contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         uint256 newTokenId = _tokenIds.current();
 
         _safeMint(recipient, newTokenId);
-        _setTokenURI(newTokenId, tokenURI);
+        _setTokenURI(newTokenId, _tokenURI);
 
         _tokenRoyalties[newTokenId] = royaltyPercentage;
         _originalCreators[newTokenId] = recipient;
@@ -41,7 +40,7 @@ contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
         emit MusicNFTCreated(
             newTokenId,
             recipient,
-            tokenURI,
+            _tokenURI,
             royaltyPercentage
         );
 
@@ -60,37 +59,5 @@ contract MusicNFT is ERC721URIStorage, ERC721Enumerable, Ownable {
     ) external view returns (address) {
         require(_exists(tokenId), "Token does not exist");
         return _originalCreators[tokenId];
-    }
-
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        uint256 batchSize
-    ) internal override(ERC721, ERC721Enumerable) {
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
-    }
-
-    function supportsInterface(
-        bytes4 interfaceId
-    )
-        public
-        view
-        override(ERC721, ERC721Enumerable, ERC721URIStorage)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
-    }
-
-    function tokenURI(
-        uint256 tokenId
-    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        return super.tokenURI(tokenId);
-    }
-
-    function _burn(
-        uint256 tokenId
-    ) internal override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId);
     }
 }

@@ -1,11 +1,11 @@
 <script setup>
 import { storeToRefs } from 'pinia'
-import { useWeb3Store } from '../../store/web3Store'
+import { useWeb3Store } from '../store/web3Store' 
 
 const web3Store = useWeb3Store()
 const { isConnected, account } = storeToRefs(web3Store)
 
-// Skraćivanje adrese računa za prikaz
+
 const shortenAddress = (address) => {
     return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''
 }

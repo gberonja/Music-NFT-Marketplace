@@ -33,7 +33,7 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
     event ItemCanceled(uint256 indexed tokenId, address indexed seller);
     event MarketplaceFeeUpdated(uint256 newFee);
 
-    constructor(address musicNFTAddress) Ownable(msg.sender) {
+    constructor(address musicNFTAddress) {
         musicNFTContract = MusicNFT(musicNFTAddress);
     }
 

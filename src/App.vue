@@ -1,18 +1,13 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useWeb3Store } from './store/web3Store'
-import { ThemeService } from './services/themeService'
-import Header from './components/layout/Header.vue'
-import Footer from './components/layout/Footer.vue'
-import AudioPlayer from './components/AudioPlayer.vue'
-import ToastNotifications from './components/ui/ToastNotifications.vue'
+import Header from './components/Header.vue'
+import Footer from './components/Footer.vue'
 
 const web3Store = useWeb3Store()
 
 onMounted(() => {
-  ThemeService.init()
-
-
+  // Automatsko povezivanje ako je MetaMask već povezan
   if (window.ethereum && window.ethereum.isConnected()) {
     web3Store.connectWallet()
   }
@@ -20,10 +15,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <div class="flex flex-col min-h-screen bg-gray-50">
     <Header />
 
-    <main class="flex-grow pb-20">
+    <main class="flex-grow">
       <router-view v-slot="{ Component }">
         <Transition name="page" mode="out-in">
           <component :is="Component" />
@@ -32,8 +27,6 @@ onMounted(() => {
     </main>
 
     <Footer />
-    <AudioPlayer />
-    <ToastNotifications />
   </div>
 </template>
 
@@ -57,27 +50,5 @@ onMounted(() => {
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
-}
-
-
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-gray-100 dark:bg-gray-800;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400 dark:bg-gray-500;
-}
-
-
-.dark audio::-webkit-media-controls-panel {
-  background-color: #374151;
 }
 </style>
