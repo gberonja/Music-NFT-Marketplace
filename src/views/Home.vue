@@ -6,6 +6,7 @@ import { useWeb3Store } from '../store/web3Store'
 import MusicNFTCard from '../components/MusicNFTCard.vue'
 import { audioPlayer } from '../services/audioPlayerService'
 import { getIPFSUrl } from '../services/ipfsService'
+import { ethers } from 'ethers'
 
 const marketplaceStore = useMarketplaceStore()
 const web3Store = useWeb3Store()

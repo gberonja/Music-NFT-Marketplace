@@ -6,6 +6,7 @@ import { useMarketplaceStore } from '../store/marketplaceStore'
 import { useWeb3Store } from '../store/web3Store'
 import { getIPFSUrl } from '../services/ipfsService'
 import { ethers } from 'ethers'
+import { watch } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
