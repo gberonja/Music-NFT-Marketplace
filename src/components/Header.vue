@@ -25,12 +25,13 @@ const shortenAddress = (address) => {
 
             <div>
                 <button v-if="!isConnected" @click="web3Store.connectWallet"
-                    class="bg-blue-600 hover:bg-blue-700 text-white">
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
                     Poveži Novčanik
                 </button>
                 <div v-else class="flex items-center space-x-2">
                     <span class="text-green-400">{{ shortenAddress(account) }}</span>
-                    <button @click="web3Store.disconnectWallet" class="bg-red-600 hover:bg-red-700 text-white">
+                    <button @click="web3Store.disconnectWallet"
+                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
                         Odspoji
                     </button>
                 </div>

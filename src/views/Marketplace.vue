@@ -1,102 +1,163 @@
 <script setup>
-import { onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useMarketplaceStore } from '../store/marketplaceStore'
 import { useWeb3Store } from '../store/web3Store'
-import MusicNFTCard from '../components/MusicNFTCard.vue'
+import { ethers } from 'ethers'
 
-const marketplaceStore = useMarketplaceStore()
 const web3Store = useWeb3Store()
+const { isConnected, marketplaceContract, musicNFTContract } = storeToRefs(web3Store)
 
-const {
-    filteredAndSortedItems,
-    loadingItems,
-    error,
-    filters
-} = storeToRefs(marketplaceStore)
+const nfts = ref([])
+const loading = ref(false)
+const searchTerm = ref('')
 
-const { isConnected } = storeToRefs(web3Store)
-
-onMounted(async () => {
-    if (web3Store.contractsInitialized) {
-        await marketplaceStore.fetchListedItems()
+// Demo podaci za prezentaciju
+const demoNFTs = [
+    {
+        tokenId: '1',
+        name: 'Summer Vibes',
+        artist: 'DJ Croatia',
+        price: '0.1',
+        image: 'https://via.placeholder.com/300x300/4F46E5/white?text=🎵'
+    },
+    {
+        tokenId: '2',
+        name: 'Zagreb Nights',
+        artist: 'Urban Poet',
+        price: '0.05',
+        image: 'https://via.placeholder.com/300x300/7C3AED/white?text=🎤'
+    },
+    {
+        tokenId: '3',
+        name: 'Adriatic Dreams',
+        artist: 'Coastal Sound',
+        price: '0.2',
+        image: 'https://via.placeholder.com/300x300/059669/white?text=🌊'
     }
+]
+
+async function loadNFTs() {
+    loading.value = true
+    try {
+        if (marketplaceContract.value) {
+            // Pokušaj učitati prave NFT-ove
+            const items = await marketplaceContract.value.getAllListedItems()
+            console.log('Loaded NFTs:', items)
+
+            if (items.length === 0) {
+                // Ako nema pravih NFT-ova, koristi demo
+                nfts.value = demoNFTs
+            }
+        } else {
+            // Ako nema konekcije, koristi demo
+            nfts.value = demoNFTs
+        }
+    } catch (error) {
+        console.error('Greška pri učitavanju NFT-ova:', error)
+        // Ako je greška, koristi demo podatke
+        nfts.value = demoNFTs
+    } finally {
+        loading.value = false
+    }
+}
+
+async function buyNFT(nft) {
+    if (!isConnected.value) {
+        alert('Povežite se s MetaMask novčanikom!')
+        return
+    }
+
+    try {
+        const price = ethers.utils.parseEther(nft.price)
+        const transaction = await marketplaceContract.value.buyItem(nft.tokenId, {
+            value: price
+        })
+
+        await transaction.wait()
+        alert(`Uspješno ste kupili: ${nft.name}!`)
+        loadNFTs() // Refresh lista
+    } catch (error) {
+        console.error('Greška pri kupnji:', error)
+        alert('Greška pri kupnji NFT-a')
+    }
+}
+
+const filteredNFTs = computed(() => {
+    if (!searchTerm.value) return nfts.value
+
+    return nfts.value.filter(nft =>
+        nft.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+        nft.artist.toLowerCase().includes(searchTerm.value.toLowerCase())
+    )
 })
 
-watch(() => web3Store.contractsInitialized, async (newVal) => {
-    if (newVal) {
-        await marketplaceStore.fetchListedItems()
-    }
-}, { immediate: true })
+onMounted(() => {
+    loadNFTs()
+})
 </script>
 
 <template>
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold mb-8 text-center">Glazbeni NFT Marketplace</h1>
+    <div class="min-h-screen bg-gray-50 py-8">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold text-center mb-8">🛍️ Glazbeni NFT Marketplace</h1>
 
-        <!-- Error poruka -->
-        <div v-if="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
-            <p class="font-bold">Greška</p>
-            <p>{{ error }}</p>
-        </div>
-
-        <!-- Jednostavna pretraga -->
-        <div class="mb-8 bg-white shadow-md rounded-lg p-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pretraži</label>
-                    <input v-model="filters.search" type="text" placeholder="Traži NFT-ove..."
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Min. cijena (ETH)</label>
-                    <input v-model="filters.minPrice" type="number" step="0.001" min="0"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Max. cijena (ETH)</label>
-                    <input v-model="filters.maxPrice" type="number" step="0.001" min="0"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                </div>
-
-                <div class="flex items-end">
-                    <button @click="marketplaceStore.resetFilters()"
-                        class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
-                        Resetiraj
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Prikaz NFT-ova -->
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">
-                    Dostupni NFT-ovi
-                    <span class="text-gray-500 text-base">
-                        ({{ filteredAndSortedItems.length }})
-                    </span>
-                </h2>
+            <!-- Pretraga -->
+            <div class="max-w-md mx-auto mb-8">
+                <input v-model="searchTerm" type="text" placeholder="🔍 Pretraži glazbu ili umjetnika..."
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <div v-if="loadingItems" class="flex justify-center items-center py-12">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <!-- Loading -->
+            <div v-if="loading" class="text-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p class="mt-4 text-gray-600">Učitavanje NFT-ova...</p>
             </div>
 
-            <div v-else-if="filteredAndSortedItems.length === 0" class="text-center py-12">
-                <h3 class="text-xl font-semibold text-gray-600 mb-2">Nema NFT-ova</h3>
-                <p class="text-gray-500 mb-4">Pokušajte s drugim filterima.</p>
-                <button @click="marketplaceStore.resetFilters()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                    Resetiraj filtere
-                </button>
+            <!-- NFT Grid -->
+            <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div v-for="nft in filteredNFTs" :key="nft.tokenId"
+                    class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                    <img :src="nft.image" :alt="nft.name" class="w-full h-48 object-cover">
+
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold mb-1">{{ nft.name }}</h3>
+                        <p class="text-gray-600 mb-3">👤 {{ nft.artist }}</p>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-xl font-bold text-blue-600">{{ nft.price }} ETH</span>
+                            <button @click="buyNFT(nft)" :disabled="!isConnected"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                                💰 Kupi
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <MusicNFTCard v-for="nft in filteredAndSortedItems" :key="nft.tokenId" :nft="nft" />
+            <!-- Prazan state -->
+            <div v-if="!loading && filteredNFTs.length === 0" class="text-center py-12">
+                <div class="text-6xl mb-4">🔍</div>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">Nema rezultata</h3>
+                <p class="text-gray-500">Pokušajte s drugim pojmom pretrage</p>
+            </div>
+
+            <!-- Connect wallet poruka -->
+            <div v-if="!isConnected" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-8">
+                <div class="flex">
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            <strong>Napomena:</strong> Povežite se s MetaMask novčanikom za kupnju NFT-ova.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+</style>

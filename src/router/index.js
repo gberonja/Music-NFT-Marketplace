@@ -1,11 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-// Uvoz komponenti za stranice
 import Home from '../views/Home.vue'
 import Marketplace from '../views/Marketplace.vue'
 import UploadMusic from '../views/UploadMusic.vue'
 import Profile from '../views/Profile.vue'
-import NFTDetails from '../views/NFTDetails.vue'
 
 const routes = [
   {
@@ -27,12 +25,6 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: Profile
-  },
-  {
-    path: '/nft/:id',
-    name: 'NFTDetails',
-    component: NFTDetails,
-    props: true
   }
 ]
 
