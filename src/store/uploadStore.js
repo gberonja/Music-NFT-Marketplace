@@ -7,7 +7,6 @@ export const useUploadStore = defineStore('upload', () => {
 
   const web3Store = useWeb3Store()
   
-
   const isUploading = ref(false)
   const uploadProgress = ref(0)
   const error = ref(null)
@@ -18,13 +17,11 @@ export const useUploadStore = defineStore('upload', () => {
   const description = ref('')
   const coverImage = ref(null)
   const audioFile = ref(null)
-  const royaltyPercentage = ref(5) 
+  const royaltyPercentage = ref(5)
   
-
   const coverImageUrl = ref('')
   const audioFileUrl = ref('')
   
-
   function resetForm() {
     title.value = ''
     artist.value = ''
@@ -39,7 +36,6 @@ export const useUploadStore = defineStore('upload', () => {
     uploadProgress.value = 0
   }
   
-
   function setCoverImage(file) {
     coverImage.value = file
     if (file) {
@@ -49,7 +45,6 @@ export const useUploadStore = defineStore('upload', () => {
     }
   }
   
-
   function setAudioFile(file) {
     audioFile.value = file
     if (file) {
@@ -59,15 +54,14 @@ export const useUploadStore = defineStore('upload', () => {
     }
   }
   
-
   async function uploadAndMint() {
     if (!web3Store.isConnected) {
-      error.value = 'Morate se povezati s novčanikom prije uploada'
+      error.value = 'You must connect wallet before upload'
       return
     }
     
     if (!title.value || !artist.value || !coverImage.value || !audioFile.value) {
-      error.value = 'Popunite sva obavezna polja'
+      error.value = 'Fill all required fields'
       return
     }
     
@@ -76,15 +70,12 @@ export const useUploadStore = defineStore('upload', () => {
       error.value = null
       successMessage.value = ''
       
-
       uploadProgress.value = 10
       const coverImageCID = await uploadFileToIPFS(coverImage.value)
       
- 
       uploadProgress.value = 40
       const audioCID = await uploadFileToIPFS(audioFile.value)
       
-
       uploadProgress.value = 70
       const metadata = {
         name: title.value,
@@ -106,10 +97,9 @@ export const useUploadStore = defineStore('upload', () => {
       
       const metadataCID = await uploadMetadataToIPFS(metadata)
       
-
       uploadProgress.value = 85
       const tokenURI = `ipfs://${metadataCID}`
-      const royaltyBasisPoints = royaltyPercentage.value * 100 // Konverzija postotka u basis points
+      const royaltyBasisPoints = royaltyPercentage.value * 100
       
       const transaction = await web3Store.musicNFTContract.mintMusic(
         web3Store.account,
@@ -119,27 +109,23 @@ export const useUploadStore = defineStore('upload', () => {
       
       await transaction.wait()
       
-
       uploadProgress.value = 100
-      successMessage.value = 'NFT je uspješno kreiran!'
+      successMessage.value = 'NFT successfully created!'
       
       resetForm()
     } catch (e) {
-      console.error('Greška pri uploadu ili mintanju:', e)
-      error.value = `Greška: ${e.message || 'Nepoznata greška pri uploadu'}`
+      console.error('Upload or minting error:', e)
+      error.value = `Error: ${e.message || 'Unknown upload error'}`
     } finally {
       isUploading.value = false
     }
   }
   
   return {
-
     isUploading,
     uploadProgress,
     error,
     successMessage,
-    
-
     title,
     artist,
     description,
@@ -148,8 +134,6 @@ export const useUploadStore = defineStore('upload', () => {
     royaltyPercentage,
     coverImageUrl,
     audioFileUrl,
-    
-
     resetForm,
     setCoverImage,
     setAudioFile,

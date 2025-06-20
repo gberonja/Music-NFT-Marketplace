@@ -13,23 +13,20 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         address owner;
         uint256 price;
         bool isActive;
-        uint256 listedAt; 
-        string category; 
+        uint256 listedAt;
+        string category;
     }
 
-
-    uint256 private marketplaceFee = 250; 
+    uint256 private marketplaceFee = 250;
     uint256 private constant MAX_ROYALTY = 1000;
     uint256 private constant MAX_MARKETPLACE_FEE = 1000;
 
     mapping(uint256 => ListedItem) private _listedItems;
     uint256[] private _allListedTokenIds;
 
-    // NOVO: Praćenje prodaja po korisnicima
     mapping(address => uint256) private _userSales;
     mapping(address => uint256) private _userPurchases;
 
-    // NOVO: Aktivni ponude (bidding)
     struct Bid {
         address bidder;
         uint256 amount;
@@ -39,7 +36,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
     mapping(uint256 => Bid[]) private _tokenBids;
     mapping(uint256 => uint256) private _minBidPrice;
 
-    // Events
     event ItemListed(
         uint256 indexed tokenId,
         address indexed seller,
@@ -70,7 +66,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         musicNFTContract = MusicNFT(musicNFTAddress);
     }
 
-    // POBOLJŠANA listItem funkcija s kategorijom
     function listItem(
         uint256 tokenId,
         uint256 price,
@@ -102,7 +97,10 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         emit ItemListed(tokenId, msg.sender, price, category);
     }
 
-    // NOVA: Funkcija za postavljanje minimalne cijene za bidding
+    function listItem(uint256 tokenId, uint256 price) external nonReentrant {
+        listItem(tokenId, price, "Music");
+    }
+
     function setMinBidPrice(uint256 tokenId, uint256 minPrice) external {
         require(
             _listedItems[tokenId].seller == msg.sender,
@@ -112,7 +110,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         _minBidPrice[tokenId] = minPrice;
     }
 
-    // NOVA: Funkcija za bidding
     function placeBid(uint256 tokenId) external payable {
         require(_listedItems[tokenId].isActive, "Item is not for sale");
         require(
@@ -121,7 +118,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         );
         require(msg.value >= _minBidPrice[tokenId], "Bid too low");
 
-        // Provjeri da li je bid veći od trenutno najvećeg
         Bid[] storage bids = _tokenBids[tokenId];
         if (bids.length > 0) {
             require(
@@ -129,7 +125,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
                 "Bid must be higher than current highest"
             );
 
-            // Vrati novac prethodnom bideru
             (bool success, ) = payable(bids[bids.length - 1].bidder).call{
                 value: bids[bids.length - 1].amount
             }("");
@@ -147,7 +142,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         emit BidPlaced(tokenId, msg.sender, msg.value);
     }
 
-    // NOVA: Prihvaćanje bid-a
     function acceptBid(uint256 tokenId) external nonReentrant {
         require(
             _listedItems[tokenId].seller == msg.sender,
@@ -160,7 +154,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
 
         Bid memory highestBid = bids[bids.length - 1];
 
-        // Izvrši prodaju s bid cijenom
         _executeSale(tokenId, highestBid.bidder, highestBid.amount);
 
         emit BidAccepted(
@@ -171,7 +164,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         );
     }
 
-    // Postojeća buyItem funkcija
     function buyItem(uint256 tokenId) external payable nonReentrant {
         ListedItem storage item = _listedItems[tokenId];
         require(item.isActive, "Item is not for sale");
@@ -180,7 +172,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
 
         _executeSale(tokenId, msg.sender, item.price);
 
-        // Refund excess payment
         if (msg.value > item.price) {
             (bool refundSuccess, ) = payable(msg.sender).call{
                 value: msg.value - item.price
@@ -189,7 +180,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         }
     }
 
-    // NOVA: Privatna funkcija za izvršavanje prodaje
     function _executeSale(
         uint256 tokenId,
         address buyer,
@@ -206,11 +196,9 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         item.isActive = false;
         item.owner = buyer;
 
-        // Povećaj brojače prodaja/kupnji
         _userSales[item.seller]++;
         _userPurchases[buyer]++;
 
-        // Pošalji royalty
         if (royaltyAmount > 0) {
             (bool royaltySuccess, ) = payable(creator).call{
                 value: royaltyAmount
@@ -218,7 +206,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
             require(royaltySuccess, "Failed to send royalty");
         }
 
-        // Pošalji marketplace fee
         if (marketplaceAmount > 0) {
             (bool feeSuccess, ) = payable(owner()).call{
                 value: marketplaceAmount
@@ -226,23 +213,19 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
             require(feeSuccess, "Failed to send marketplace fee");
         }
 
-        // Pošalji novac prodavatelju
         (bool sellerSuccess, ) = payable(item.seller).call{value: sellerAmount}(
             ""
         );
         require(sellerSuccess, "Failed to send payment to seller");
 
-        // Transfer NFT-a
         musicNFTContract.safeTransferFrom(item.seller, buyer, tokenId);
 
-        // Očisti bidove
         delete _tokenBids[tokenId];
         delete _minBidPrice[tokenId];
 
         emit ItemSold(tokenId, item.seller, buyer, salePrice);
     }
 
-    // NOVE: Getter funkcije za analitiku
     function getUserSales(address user) external view returns (uint256) {
         return _userSales[user];
     }
@@ -262,7 +245,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
     ) external view returns (ListedItem[] memory) {
         uint256 count = 0;
 
-        // Prebroji matches
         for (uint256 i = 0; i < _allListedTokenIds.length; i++) {
             uint256 tokenId = _allListedTokenIds[i];
             if (
@@ -274,7 +256,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
             }
         }
 
-        // Stvori rezultat
         ListedItem[] memory result = new ListedItem[](count);
         uint256 resultIndex = 0;
 
@@ -293,7 +274,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
         return result;
     }
 
-    // Postojeće funkcije ostaju iste...
     function cancelListing(uint256 tokenId) external {
         ListedItem storage item = _listedItems[tokenId];
         require(item.isActive, "Item is not listed");
@@ -301,7 +281,6 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
 
         item.isActive = false;
 
-        // Vrati novac svim biderima
         Bid[] storage bids = _tokenBids[tokenId];
         for (uint256 i = 0; i < bids.length; i++) {
             (bool success, ) = payable(bids[i].bidder).call{

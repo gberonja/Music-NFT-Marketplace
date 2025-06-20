@@ -12,7 +12,7 @@ export const useMarketplaceStore = defineStore('marketplace', () => {
   
   async function fetchListedItems() {
     if (!web3Store.marketplaceContract) {
-      error.value = 'Marketplace ugovor nije inicijaliziran'
+      error.value = 'Marketplace contract not initialized'
       return
     }
     
@@ -47,14 +47,14 @@ export const useMarketplaceStore = defineStore('marketplace', () => {
             metadata
           })
         } catch (err) {
-          console.error(`Greška pri dohvaćanju metapodataka za token ${item.tokenId}:`, err)
+          console.error(`Error fetching metadata for token ${item.tokenId}:`, err)
         }
       }
       
       listedItems.value = itemsWithMetadata
     } catch (e) {
-      console.error('Greška pri dohvaćanju NFT-ova:', e)
-      error.value = `Greška pri dohvaćanju NFT-ova: ${e.message || 'Nepoznata greška'}`
+      console.error('Error fetching NFTs:', e)
+      error.value = `Error fetching NFTs: ${e.message || 'Unknown error'}`
     } finally {
       loadingItems.value = false
     }
@@ -62,11 +62,11 @@ export const useMarketplaceStore = defineStore('marketplace', () => {
 
   async function buyNFT(tokenId, price) {
     if (!web3Store.isConnected) {
-      throw new Error('Morate se povezati s novčanikom')
+      throw new Error('You must connect wallet')
     }
     
     if (!web3Store.marketplaceContract) {
-      throw new Error('Marketplace ugovor nije inicijaliziran')
+      throw new Error('Marketplace contract not initialized')
     }
     
     try {
@@ -77,14 +77,14 @@ export const useMarketplaceStore = defineStore('marketplace', () => {
       await fetchListedItems()
       return true
     } catch (e) {
-      console.error('Greška pri kupnji NFT-a:', e)
-      throw new Error(`Greška pri kupnji NFT-a: ${e.message || 'Nepoznata greška'}`)
+      console.error('Error buying NFT:', e)
+      throw new Error(`Error buying NFT: ${e.message || 'Unknown error'}`)
     }
   }
   
   async function fetchNFTDetails(tokenId) {
     if (!web3Store.musicNFTContract || !web3Store.marketplaceContract) {
-      throw new Error('Ugovori nisu inicijalizirani')
+      throw new Error('Contracts not initialized')
     }
     
     try {
@@ -120,8 +120,8 @@ export const useMarketplaceStore = defineStore('marketplace', () => {
         metadata
       }
     } catch (e) {
-      console.error(`Greška pri dohvaćanju detalja za token ${tokenId}:`, e)
-      throw new Error(`Greška pri dohvaćanju detalja: ${e.message || 'Nepoznata greška'}`)
+      console.error(`Error fetching details for token ${tokenId}:`, e)
+      throw new Error(`Error fetching details: ${e.message || 'Unknown error'}`)
     }
   }
   

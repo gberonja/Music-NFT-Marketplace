@@ -9,16 +9,14 @@ contract MusicNFT is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    // Royalty info
     mapping(uint256 => uint256) private _tokenRoyalties;
     mapping(uint256 => address) private _originalCreators;
 
-    // NOVO: Dodaj više metapodataka za glazbu
     struct MusicMetadata {
-        string genre; // Žanr glazbe
-        uint256 duration; // Trajanje u sekundama
-        uint256 releaseYear; // Godina izdanja
-        bool isExplicit; // Eksplicitan sadržaj
+        string genre;
+        uint256 duration;
+        uint256 releaseYear;
+        bool isExplicit;
     }
 
     mapping(uint256 => MusicMetadata) private _musicMetadata;
@@ -33,7 +31,6 @@ contract MusicNFT is ERC721URIStorage, Ownable {
 
     constructor() ERC721("MusicNFT", "MNFT") {}
 
-    // POBOLJŠANA mint funkcija s više parametara
     function mintMusic(
         address recipient,
         string memory _tokenURI,
@@ -56,7 +53,6 @@ contract MusicNFT is ERC721URIStorage, Ownable {
         _tokenRoyalties[newTokenId] = royaltyPercentage;
         _originalCreators[newTokenId] = recipient;
 
-        // Spremi muzičke metapodatke
         _musicMetadata[newTokenId] = MusicMetadata({
             genre: genre,
             duration: duration,
@@ -75,7 +71,23 @@ contract MusicNFT is ERC721URIStorage, Ownable {
         return newTokenId;
     }
 
-    // NOVO: Funkcija za dohvaćanje muzičkih metapodataka
+    function mintMusic(
+        address recipient,
+        string memory _tokenURI,
+        uint256 royaltyPercentage
+    ) public returns (uint256) {
+        return
+            mintMusic(
+                recipient,
+                _tokenURI,
+                royaltyPercentage,
+                "Unknown",
+                0,
+                2023,
+                false
+            );
+    }
+
     function getMusicMetadata(
         uint256 tokenId
     )
@@ -98,7 +110,6 @@ contract MusicNFT is ERC721URIStorage, Ownable {
         );
     }
 
-    // NOVO: Funkcija za filtriranje po žanru
     function getTokensByGenre(
         string memory genre
     ) external view returns (uint256[] memory) {
@@ -116,7 +127,6 @@ contract MusicNFT is ERC721URIStorage, Ownable {
             }
         }
 
-        // Kopiraj samo relevantne rezultate
         uint256[] memory result = new uint256[](resultCount);
         for (uint256 i = 0; i < resultCount; i++) {
             result[i] = tempResult[i];
@@ -138,7 +148,6 @@ contract MusicNFT is ERC721URIStorage, Ownable {
         require(_exists(tokenId), "Token does not exist");
         return _originalCreators[tokenId];
     }
-
 
     function totalSupply() external view returns (uint256) {
         return _tokenIds.current();

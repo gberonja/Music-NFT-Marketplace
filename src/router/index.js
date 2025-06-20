@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from '../views/Home.vue'
 import Marketplace from '../views/Marketplace.vue'
-import UploadMusic from '../views/UploadMusic.vue'
+import Upload from '../views/Upload.vue'
 import Profile from '../views/Profile.vue'
 
 const routes = [
@@ -18,8 +18,8 @@ const routes = [
   },
   {
     path: '/upload',
-    name: 'UploadMusic',
-    component: UploadMusic
+    name: 'Upload',
+    component: Upload
   },
   {
     path: '/profile',

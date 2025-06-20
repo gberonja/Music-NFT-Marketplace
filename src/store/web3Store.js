@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import { ethers } from 'ethers'
 import detectEthereumProvider from '@metamask/detect-provider'
 
-// Import ABI-jeva
 import MusicNFTABI from '../../smart-contracts/artifacts/contracts/MusicNFT.sol/MusicNFT.json'
 import MusicMarketplaceABI from '../../smart-contracts/artifacts/contracts/MusicMarketplace.sol/MusicMarketplace.json'
 
@@ -15,7 +14,6 @@ export const useWeb3Store = defineStore('web3', () => {
   const musicNFTContract = ref(null)
   const marketplaceContract = ref(null)
   
-  // Contract adrese iz .env
   const musicNFTAddress = import.meta.env.VITE_MUSICNFT_ADDRESS
   const marketplaceAddress = import.meta.env.VITE_MARKETPLACE_ADDRESS
 
@@ -32,7 +30,6 @@ export const useWeb3Store = defineStore('web3', () => {
         provider.value = new ethers.providers.Web3Provider(window.ethereum)
         signer.value = provider.value.getSigner()
         
-        // Stvori contract instance
         musicNFTContract.value = new ethers.Contract(
           musicNFTAddress,
           MusicNFTABI.abi,
@@ -46,21 +43,34 @@ export const useWeb3Store = defineStore('web3', () => {
         )
         
         isConnected.value = true
-        console.log('Wallet povezan:', account.value)
+        console.log('Wallet connected:', account.value)
       } else {
-        alert('Molimo instalirajte MetaMask!')
+        alert('Please install MetaMask!')
       }
     } catch (error) {
-      console.error('Greška pri povezivanju:', error)
-      alert('Greška pri povezivanju s novčanikom')
+      console.error('Connection error:', error)
+      alert('Error connecting to wallet')
     }
+  }
+
+  function disconnectWallet() {
+    isConnected.value = false
+    account.value = ''
+    provider.value = null
+    signer.value = null
+    musicNFTContract.value = null
+    marketplaceContract.value = null
+    console.log('Wallet disconnected')
   }
 
   return {
     isConnected,
     account,
-    connectWallet,
+    provider,
+    signer,
     musicNFTContract,
-    marketplaceContract
+    marketplaceContract,
+    connectWallet,
+    disconnectWallet
   }
 })
