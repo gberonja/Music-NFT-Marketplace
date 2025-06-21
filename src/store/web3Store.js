@@ -3,19 +3,14 @@ import { ref } from 'vue'
 import { ethers } from 'ethers'
 import detectEthereumProvider from '@metamask/detect-provider'
 
-import MusicNFTABI from '../../smart-contracts/artifacts/contracts/MusicNFT.sol/MusicNFT.json'
-import MusicMarketplaceABI from '../../smart-contracts/artifacts/contracts/MusicMarketplace.sol/MusicMarketplace.json'
-
 export const useWeb3Store = defineStore('web3', () => {
   const isConnected = ref(false)
   const account = ref('')
   const provider = ref(null)
   const signer = ref(null)
-  const musicNFTContract = ref(null)
-  const marketplaceContract = ref(null)
   
-  const musicNFTAddress = import.meta.env.VITE_MUSICNFT_ADDRESS
-  const marketplaceAddress = import.meta.env.VITE_MARKETPLACE_ADDRESS
+  const musicNFTAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+  const marketplaceAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
 
   async function connectWallet() {
     try {
@@ -30,20 +25,9 @@ export const useWeb3Store = defineStore('web3', () => {
         provider.value = new ethers.providers.Web3Provider(window.ethereum)
         signer.value = provider.value.getSigner()
         
-        musicNFTContract.value = new ethers.Contract(
-          musicNFTAddress,
-          MusicNFTABI.abi,
-          signer.value
-        )
-        
-        marketplaceContract.value = new ethers.Contract(
-          marketplaceAddress,
-          MusicMarketplaceABI.abi,
-          signer.value
-        )
-        
         isConnected.value = true
         console.log('Wallet connected:', account.value)
+        console.log('Ready for transactions!')
       } else {
         alert('Please install MetaMask!')
       }
@@ -58,8 +42,6 @@ export const useWeb3Store = defineStore('web3', () => {
     account.value = ''
     provider.value = null
     signer.value = null
-    musicNFTContract.value = null
-    marketplaceContract.value = null
     console.log('Wallet disconnected')
   }
 
@@ -68,8 +50,8 @@ export const useWeb3Store = defineStore('web3', () => {
     account,
     provider,
     signer,
-    musicNFTContract,
-    marketplaceContract,
+    musicNFTAddress,
+    marketplaceAddress,
     connectWallet,
     disconnectWallet
   }

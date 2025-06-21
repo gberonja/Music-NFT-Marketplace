@@ -2,10 +2,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useWeb3Store } from '../store/web3Store'
-import { ethers } from 'ethers'
 
 const web3Store = useWeb3Store()
-const { isConnected, marketplaceContract, musicNFTContract } = storeToRefs(web3Store)
+const { isConnected } = storeToRefs(web3Store)
 
 const nfts = ref([])
 const loading = ref(false)
@@ -25,66 +24,28 @@ const demoNFTs = [
         artist: 'Urban Poet',
         price: '0.05',
         image: 'https://via.placeholder.com/300x300/7C3AED/white?text=Music'
-    },
-    {
-        tokenId: '3',
-        name: 'Adriatic Dreams',
-        artist: 'Coastal Sound',
-        price: '0.2',
-        image: 'https://via.placeholder.com/300x300/059669/white?text=Music'
     }
 ]
 
-async function loadNFTs() {
-    loading.value = true
-    try {
-        if (marketplaceContract.value) {
-            const items = await marketplaceContract.value.getAllListedItems()
-            console.log('Loaded NFTs:', items)
-
-            if (items.length === 0) {
-                nfts.value = demoNFTs
-            }
-        } else {
-            nfts.value = demoNFTs
-        }
-    } catch (error) {
-        console.error('Error loading NFTs:', error)
-        nfts.value = demoNFTs
-    } finally {
-        loading.value = false
-    }
-}
-
-async function buyNFT(nft) {
-    if (!isConnected.value) {
-        alert('Connect MetaMask wallet!')
-        return
-    }
-
-    try {
-        const price = ethers.utils.parseEther(nft.price)
-        const transaction = await marketplaceContract.value.buyItem(nft.tokenId, {
-            value: price
-        })
-
-        await transaction.wait()
-        alert(`Successfully purchased: ${nft.name}!`)
-        loadNFTs()
-    } catch (error) {
-        console.error('Purchase error:', error)
-        alert('Error purchasing NFT')
-    }
-}
-
 const filteredNFTs = computed(() => {
     if (!searchTerm.value) return nfts.value
-
     return nfts.value.filter(nft =>
         nft.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
         nft.artist.toLowerCase().includes(searchTerm.value.toLowerCase())
     )
 })
+
+function loadNFTs() {
+    loading.value = true
+    setTimeout(() => {
+        nfts.value = demoNFTs
+        loading.value = false
+    }, 500)
+}
+
+function buyNFT(nft) {
+    alert(`Demo: Would buy ${nft.name} for ${nft.price} ETH`)
+}
 
 onMounted(() => {
     loadNFTs()
@@ -119,7 +80,7 @@ onMounted(() => {
                             <span class="text-xl font-bold text-blue-600">{{ nft.price }} ETH</span>
                             <button @click="buyNFT(nft)" :disabled="!isConnected"
                                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                                Buy
+                                Buy (Demo)
                             </button>
                         </div>
                     </div>

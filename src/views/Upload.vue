@@ -2,9 +2,10 @@
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useWeb3Store } from '../store/web3Store'
+import { testTransaction } from '../utils/simpleWeb3'
 
 const web3Store = useWeb3Store()
-const { isConnected, musicNFTContract } = storeToRefs(web3Store)
+const { isConnected, account } = storeToRefs(web3Store)
 
 const title = ref('')
 const artist = ref('')
@@ -12,45 +13,37 @@ const price = ref('')
 const uploading = ref(false)
 
 async function createNFT() {
+  console.log("=== TEST NFT ===");
+
   if (!isConnected.value) {
-    alert('Connect MetaMask wallet!')
+    alert('Connect MetaMask!')
     return
   }
 
-  if (!title.value || !artist.value || !price.value) {
-    alert('Please fill all fields')
+  if (!title.value || !artist.value) {
+    alert('Fill title and artist')
     return
   }
 
   try {
     uploading.value = true
 
-    const demoTokenURI = `demo://music/${Date.now()}`
-    const royaltyPercentage = 500
+    const result = await testTransaction(account.value)
 
-    console.log('Creating NFT...', {
-      title: title.value,
-      artist: artist.value,
-      price: price.value
-    })
-
-    const transaction = await musicNFTContract.value.mintMusic(
-      web3Store.account,
-      demoTokenURI,
-      royaltyPercentage
-    )
-
-    await transaction.wait()
-
-    alert(`NFT successfully created!\n\nTitle: ${title.value}\nArtist: ${artist.value}`)
+    alert(`Test transaction sent!\nTX: ${result.hash}`)
 
     title.value = ''
     artist.value = ''
     price.value = ''
 
   } catch (error) {
-    console.error('NFT creation error:', error)
-    alert('Error creating NFT')
+    console.error('ERROR:', error);
+
+    if (error.code === 4001) {
+      alert('Cancelled by user');
+    } else {
+      alert(`Error: ${error.message}`);
+    }
   } finally {
     uploading.value = false
   }
@@ -98,23 +91,17 @@ async function createNFT() {
 
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p class="text-blue-800 text-sm">
-              <strong>Royalty:</strong> You will automatically receive 5% from every resale of your NFT!
+              <strong>Test Version:</strong> This will send a test transaction to verify connection.
             </p>
           </div>
 
           <button type="submit" :disabled="!isConnected || uploading"
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-            <span v-if="uploading">Creating NFT...</span>
-            <span v-else>Create NFT</span>
+            <span v-if="uploading">Sending Test...</span>
+            <span v-else>Test Transaction</span>
           </button>
 
         </form>
-
-        <div class="mt-6 text-center">
-          <p class="text-gray-500 text-xs">
-            <strong>Demo version:</strong> Real file upload will be implemented in production
-          </p>
-        </div>
 
       </div>
     </div>

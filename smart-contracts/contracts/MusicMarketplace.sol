@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
 import "./MusicNFT.sol";
@@ -98,7 +99,29 @@ contract MusicMarketplace is ReentrancyGuard, Ownable {
     }
 
     function listItem(uint256 tokenId, uint256 price) external nonReentrant {
-        listItem(tokenId, price, "Music");
+        require(price > 0, "Price must be greater than 0");
+        require(
+            musicNFTContract.ownerOf(tokenId) == msg.sender,
+            "You don't own this token"
+        );
+        require(
+            musicNFTContract.getApproved(tokenId) == address(this) ||
+                musicNFTContract.isApprovedForAll(msg.sender, address(this)),
+            "Marketplace not approved to transfer token"
+        );
+
+        _listedItems[tokenId] = ListedItem({
+            tokenId: tokenId,
+            seller: msg.sender,
+            owner: msg.sender,
+            price: price,
+            isActive: true,
+            listedAt: block.timestamp,
+            category: "Music"
+        });
+
+        _allListedTokenIds.push(tokenId);
+        emit ItemListed(tokenId, msg.sender, price, "Music");
     }
 
     function setMinBidPrice(uint256 tokenId, uint256 minPrice) external {

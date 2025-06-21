@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
   resolve: {
@@ -11,5 +10,10 @@ export default defineConfig({
       '@contracts': path.resolve(__dirname, './smart-contracts/artifacts/contracts')
     }
   },
-  // Uklonite define sekciju jer uzrokuje security warning
+  define: {
+    global: 'globalThis',
+  },
+  optimizeDeps: {
+    include: ['ethers']
+  }
 })

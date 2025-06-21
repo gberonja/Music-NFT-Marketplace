@@ -16,23 +16,23 @@ const shortenAddress = (address) => {
             <div class="flex items-center space-x-4">
                 <h1 class="text-xl font-bold">MusicNFT</h1>
                 <nav class="flex space-x-4">
-                    <router-link to="/" class="hover:text-blue-400">Početna</router-link>
+                    <router-link to="/" class="hover:text-blue-400">Home</router-link>
                     <router-link to="/marketplace" class="hover:text-blue-400">Marketplace</router-link>
                     <router-link to="/upload" class="hover:text-blue-400">Upload</router-link>
-                    <router-link v-if="isConnected" to="/profile" class="hover:text-blue-400">Profil</router-link>
+                    <router-link v-if="isConnected" to="/profile" class="hover:text-blue-400">Profile</router-link>
                 </nav>
             </div>
 
             <div>
                 <button v-if="!isConnected" @click="web3Store.connectWallet"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                    Poveži Novčanik
+                    Connect Wallet
                 </button>
                 <div v-else class="flex items-center space-x-2">
                     <span class="text-green-400">{{ shortenAddress(account) }}</span>
                     <button @click="web3Store.disconnectWallet"
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
-                        Odspoji
+                        Disconnect
                     </button>
                 </div>
             </div>
