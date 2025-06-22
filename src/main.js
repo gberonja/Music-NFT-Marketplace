@@ -4,6 +4,10 @@ import router from './router'
 import './style.css' 
 import App from './App.vue'
 
+// Buffer polyfill za ethers.js
+import { Buffer } from 'buffer'
+globalThis.Buffer = Buffer
+
 const pinia = createPinia()
 const app = createApp(App)
 

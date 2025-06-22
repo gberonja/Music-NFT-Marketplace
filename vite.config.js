@@ -14,6 +14,11 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
-    include: ['ethers']
+    include: ['ethers', 'buffer']
+  },
+  build: {
+    rollupOptions: {
+      external: ['buffer']
+    }
   }
 })

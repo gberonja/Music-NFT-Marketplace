@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useWeb3Store } from './store/web3Store'
 import Header from './components/Header.vue'
+import Footer from './components/Footer.vue'
 
 const web3Store = useWeb3Store()
 
@@ -19,5 +20,6 @@ onMounted(() => {
     <main>
       <router-view />
     </main>
+    <Footer />
   </div>
 </template>
