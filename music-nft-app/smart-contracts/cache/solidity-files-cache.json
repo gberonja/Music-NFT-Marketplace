@@ -1,0 +1,75 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "C:\\Users\\user\\Documents\\FIPU\\2. semestar\\Blockchain aplikacije\\Projekt\\music-nft-marketplace\\music-nft-app\\smart-contracts\\contracts\\SimpleMusicNFT.sol": {
+      "lastModificationDate": 1750598542082,
+      "contentHash": "400570f298264ebb84199b6cc4472b2c",
+      "sourceName": "contracts/SimpleMusicNFT.sol",
+      "solcConfig": {
+        "version": "0.8.18",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.18"
+      ],
+      "artifacts": [
+        "SimpleMusicNFT"
+      ]
+    },
+    "C:\\Users\\user\\Documents\\FIPU\\2. semestar\\Blockchain aplikacije\\Projekt\\music-nft-marketplace\\music-nft-app\\smart-contracts\\contracts\\SimpleMusic.sol": {
+      "lastModificationDate": 1750599286971,
+      "contentHash": "a5a0f28dee8ae1c46f26f42b558f03fb",
+      "sourceName": "contracts/SimpleMusic.sol",
+      "solcConfig": {
+        "version": "0.8.18",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.18"
+      ],
+      "artifacts": [
+        "SimpleMusic"
+      ]
+    }
+  }
+}
