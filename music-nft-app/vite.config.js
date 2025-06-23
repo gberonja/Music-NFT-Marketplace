@@ -7,6 +7,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@contracts': path.resolve(__dirname, './smart-contracts/artifacts/contracts'),
+      buffer: 'buffer',
     },
+  },
+  define: {
+    global: 'globalThis',
+  },
+  optimizeDeps: {
+    include: ['buffer'],
   },
 })

@@ -15,9 +15,31 @@ module.exports = {
   defaultNetwork: "localhost"
 };
 
-task("deploy", "Deploy SimpleMusic", async (taskArgs, hre) => {
+task("deploy", "Deploy Music contracts with Auction system", async (taskArgs, hre) => {
+  console.log("Deploying contracts...");
+  
+  // Deploy SimpleMusic first
+  console.log("1. Deploying SimpleMusic contract...");
   const SimpleMusic = await hre.ethers.getContractFactory('SimpleMusic');
-  const music = await SimpleMusic.deploy();
-  await music.deployed();
-  console.log('SimpleMusic deployed to:', music.address);
+  const musicContract = await SimpleMusic.deploy();
+  await musicContract.deployed();
+  console.log('✅ SimpleMusic deployed to:', musicContract.address);
+  
+  // Deploy MusicAuction
+  console.log("2. Deploying MusicAuction contract...");
+  const MusicAuction = await hre.ethers.getContractFactory('MusicAuction');
+  const auctionContract = await MusicAuction.deploy(musicContract.address);
+  await auctionContract.deployed();
+  console.log('✅ MusicAuction deployed to:', auctionContract.address);
+  
+  // Connect contracts
+  console.log("3. Connecting contracts...");
+  await musicContract.setAuctionContract(auctionContract.address);
+  console.log('✅ Contracts connected successfully!');
+  
+  console.log('\n🎉 Deployment completed!');
+  console.log('\n📝 ADD TO YOUR .env FILE:');
+  console.log(`VITE_MUSIC_CONTRACT_ADDRESS=${musicContract.address}`);
+  console.log(`VITE_AUCTION_CONTRACT_ADDRESS=${auctionContract.address}`);
+  console.log('\n🚀 Start your Vue app: npm run dev');
 });
